@@ -21,7 +21,7 @@ app.use(bodyParser.urlencoded({ extended: false }))
 
 const db = new sqlite3.Database('db.sqlite')
 db.serialize(() => {
-    db.run('DROP TABLE IF EXISTS `users`')
+    //db.run('DROP TABLE IF EXISTS `users`')
     db.run('CREATE TABLE IF NOT EXISTS `users` (`user_id` INTEGER PRIMARY KEY AUTOINCREMENT, `email` VARCHAR(255) NOT NULL, `secret` varchar(255) NOT NULL)')
 })
 db.close()
@@ -114,7 +114,7 @@ function verifyLogin (email, code, req, res, failUrl) {
         req.session.token = jwt.sign(email, 'supersecret')
   
         //redirect to "private" page
-        return res.redirect('/private')
+        return res.redirect('/private/?user='+email)
       })
     })
   }
@@ -136,13 +136,14 @@ function verifyLogin (email, code, req, res, failUrl) {
     secret: 'supersecret',
     algorithms: ['HS256'],
     getToken: (req) => {
-        console.log(req.session.token)
+   
       return req.session.token
     }
   })
 
   app.get('/private', jwtMiddleware, (req, res) => {
-    return res.render('private.ejs', {email: req.user})
+    console.log(req)
+    return res.render('private.ejs', { email: req.query.user})
   })
 
   app.get('/logout', jwtMiddleware, (req, res) => {
